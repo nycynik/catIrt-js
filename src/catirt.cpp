@@ -1006,10 +1006,10 @@ const Est_Result wleEst( const Ref<const ArrayXXd>& resp, const Ref<const ArrayX
  *
  *******************************************/
 
-const Vector VectorFromMatrix( const Ref<const ArrayXXd>& m )
+const std::vector<double> VectorFromMatrix( const Ref<const ArrayXXd>& m )
 {
     assert((m.rows() <= 1 || m.cols() <= 1) && "Matrix must be 0 or 1 dimensional");
-    Vector res;
+    std::vector<double> res;
     for (int i = 0; i < m.rows(); i++) {
         for (int j = 0; j < m.cols(); j++) {
             res.push_back(m(i, j));
@@ -1178,7 +1178,7 @@ const JSMatrix wasm_pder2_grm(const JSMatrix *theta, const JSMatrix *params)
  *
  * @return derivative of log-likelihood for each person - vector (N x 1)
  */
-const Vector wasm_lder1_brm(const JSMatrix *u, const JSMatrix *theta, const JSMatrix *params, LderType type)
+const std::vector<double> wasm_lder1_brm(const JSMatrix *u, const JSMatrix *theta, const JSMatrix *params, LderType type)
 {
   return VectorFromMatrix(lder1_brm(u->toEigen(), theta->toEigen(), params->toEigen(), type));
 }
@@ -1193,7 +1193,7 @@ const Vector wasm_lder1_brm(const JSMatrix *u, const JSMatrix *theta, const JSMa
  *
  * @return derivative of log-likelihood for each person/category - vector (N x 1)
  */
-const Vector wasm_lder1_grm(const JSMatrix *u, const JSMatrix *theta, const JSMatrix *params, LderType type)
+const std::vector<double> wasm_lder1_grm(const JSMatrix *u, const JSMatrix *theta, const JSMatrix *params, LderType type)
 {
   return VectorFromMatrix(lder1_grm(u->toEigen(), theta->toEigen(), params->toEigen(), type));
 }
@@ -1210,7 +1210,7 @@ const Vector wasm_lder1_grm(const JSMatrix *u, const JSMatrix *theta, const JSMa
  *
  * @return log-likelihood for each person - vector (N x 1), or for each theta - vector (T x 1)
  */
-const Vector wasm_logLik_brm(const JSMatrix *u, const JSMatrix *theta, const JSMatrix *params, LogLikType type)
+const std::vector<double> wasm_logLik_brm(const JSMatrix *u, const JSMatrix *theta, const JSMatrix *params, LogLikType type)
 {
   return VectorFromMatrix(logLik_brm(u->toEigen(), theta->toEigen(), params->toEigen(), type));
 }
@@ -1225,7 +1225,7 @@ const Vector wasm_logLik_brm(const JSMatrix *u, const JSMatrix *theta, const JSM
  *
  * @return log-likelihood for each person - vector (N x 1), or for each theta - vector (T x 1)
  */
-const Vector wasm_logLik_grm(const JSMatrix *u, const JSMatrix *theta, const JSMatrix *params, LogLikType type)
+const std::vector<double> wasm_logLik_grm(const JSMatrix *u, const JSMatrix *theta, const JSMatrix *params, LogLikType type)
 {
   return VectorFromMatrix(logLik_grm(u->toEigen(), theta->toEigen(), params->toEigen(), type));
 }
@@ -1276,8 +1276,8 @@ const JSMatrix wasm_lder2_grm(const JSMatrix *u, const JSMatrix *theta, const JS
 struct JSFI_Result
 {
     JSMatrix item;
-    Vector test;
-    Vector sem;
+    std::vector<double> test;
+    std::vector<double> sem;
     FIType type;
 
     JSFI_Result() {}
@@ -1371,9 +1371,9 @@ Uniroot_Result wasm_uniroot_lder1(const JSMatrix *range, const JSMatrix *resp, c
 // wraps Est_Result Array properties into Vectors
 struct JSEst_Result
 {
-    Vector theta;
-    Vector info;
-    Vector sem;
+    std::vector<double> theta;
+    std::vector<double> info;
+    std::vector<double> sem;
 
     JSEst_Result() {}
 

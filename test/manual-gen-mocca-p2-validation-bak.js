@@ -2,8 +2,6 @@
 'use strict';
 const catirt_load = require('../dist/catirt');
 const itembank = require('../data/mocca-items.json');
-const fs = require('fs');
-const path = require('path');
 
 // responses of simulees at various true thetas
 const simulees = [
@@ -33,50 +31,6 @@ const simulees = [
   { id: 24, true_theta1: 2, true_theta2: 1, responses:[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1] },
   { id: 25, true_theta1: 2, true_theta2: 2, responses:[1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1] },
 ];
-
-/* DataLogger
-** added to make it easier to view the output
-*/
-class DataLogger {
-  constructor(headers, filename = 'output.csv') {
-      this.headers = headers;
-      this.data = [];
-      
-      // Create output directory if it doesn't exist
-      const outputDir = 'output';
-      if (!fs.existsSync(outputDir)) {
-          console.log('📁 Creating output directory...');
-          fs.mkdirSync(outputDir);
-      }
-
-      // Setup CSV file stream in the output directory
-      const filepath = path.join(outputDir, filename);
-      console.log(`📝 Writing to ${filepath}`);
-      this.csvStream = fs.createWriteStream(filepath);
-      this.csvStream.write(headers.join(',') + '\n');
-  }
-
-  logRow(rowData) {
-      // Save to array for console.table later
-      this.data.push(rowData);
-      
-      // Write to CSV
-      const csvLine = this.headers
-          .map(header => rowData[header])
-          .join(',');
-      this.csvStream.write(csvLine + '\n');
-
-      // Print formatted console output
-      //console.table([rowData]);
-  }
-
-  finish() {
-      this.csvStream.end();
-      console.log('\n📊 Final Results:');
-      //console.table(this.data);
-      console.log('✅ Data logging complete!');
-  }
-}
 
 class BaseCAT {
   // catirt library
@@ -515,9 +469,6 @@ Pilot1.register();
 
 // generate item-by-item data for each simulee
 (async () => {
-
-  let logger;
-
   // initialize CAT model
   await BaseCAT.isReady();
   Pilot1.setItemBank(itembank);
@@ -530,21 +481,11 @@ Pilot1.register();
 
   // output header
   if (item_by_item) {
-    logger = new DataLogger([
-        'id', 'theta1', 'theta2', 'item_selected',
-        'input_response', 'input_response2',
-        'output_est_theta2', 'output_sem'
-    ], 'item_by_item_results.csv');  // Optional filename
-    // ... use logger.logRow() instead of console.log
-  } else {
-    logger = new DataLogger([
-        'id', 'theta1', 'theta2',
-        'output_est_theta2', 'output_sem',
-        'output_classification'
-    ], 'summary_results.csv');  // Optional filename
-    // ... use logger.logRow() instead of console.log
-  }  
-
+    console.log('id,theta1,theta2,item_selected,input_response,input_response2,output_est_theta2,output_sem');
+  }
+  else {
+    console.log('id,theta1,theta2,output_est_theta2,output_sem,output_classification');
+  }
 
   // translation map from "input_response2" to "input_response"
   const respmap = {
@@ -574,16 +515,7 @@ Pilot1.register();
       }
 
       if (item_by_item) {
-        logger.logRow({
-          id: simulee.id,
-          theta1: simulee.true_theta1,
-          theta2: simulee.true_theta2,
-          item_selected: item,
-          input_response: resp,
-          input_response2: resp2,
-          output_est_theta2: cat.theta[1],
-          output_sem: cat.sem[1],
-        });   
+        console.log(`${simulee.id},${simulee.true_theta1},${simulee.true_theta2},${item},${resp},${resp2},${cat.theta[1]},${cat.sem[1]}`);
       }
 
       if (cat.isDone()) {
@@ -592,27 +524,16 @@ Pilot1.register();
           console.warn(`DONE after only ${n+1} responses for simulee(${simulee.id}). status: ${cat.status}`);
         }
         if (!item_by_item) {
-          logger.logRow({
-            id: simulee.id,
-            theta1: simulee.true_theta1,
-            theta2: simulee.true_theta2,
-            output_est_theta2: cat.theta[1],
-            output_sem: cat.sem[1],
-            output_classification: cat.category
-          })
+          console.log(`${simulee.id},${simulee.true_theta1},${simulee.true_theta2},${cat.theta[1]},${cat.sem[1]},${cat.category}`);
         }
         break;
       }
     }
-
     if (!cat.isDone()) {
       // should never get here
       console.warn(`NOT DONE after processing all responses for simulee(${simulees[i].id})`);
     } else {
-      console.log(`${`${i}`.padStart(2)} DONE: Successfully ran`)
+      console.log("DONE: Successfully ran")
     }
   }
-
-  await logger.finish()
-
 })();

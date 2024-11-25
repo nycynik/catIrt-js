@@ -55,18 +55,49 @@ catirt_load().then(function(catirt) {
 });
 ```
 
-## Development
+## Library Development
+
+### Requirements
 1. Requires [nodeJS 10 or greater](https://nodejs.org/) - v14 recommended
 2. Requires [emscripten 2.0.6 or greater](https://emscripten.org/docs/getting_started/downloads.html)
 3. Requires [Eigen 3.3.8 or greater](https://gitlab.com/libeigen/eigen/-/releases) - download and extract to `eigen/`
 4. Requires nodejs packages for testing: `npm install`
 
-## Building
+## Development Setup
+
+Install all the requirements, listed above. 
+
+* Node: 
+    nvm use
+    
+* emscripten 
+You can install it via the instructions above, however you can also use these commands to install it it.
+
+    # On Ubuntu/Debian
+    sudo apt-get install libeigen3-dev
+
+    # On macOS with Homebrew
+    brew install eigen
+
+* eigen
+
+To compile, you need the latest eigen libraries installed as well. This should be in a local folder in the project and can be done using the script provided
+
+    ./scripts/setup-eigen.sh
+
+* Finally the NPM packages
+
+Via your favorite package manager, or via npm
+
+   npm install
+   
+
+### Building Library
 Run: `npm run build`
 
 This will generate `dist/catirt.wasm` and `dist/catirt.js`
 
-## Testing
+### Testing
 Unit tests: `npm test`
 
 Performance test: `node ./test/manual-performance-test.js`
