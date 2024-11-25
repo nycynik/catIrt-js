@@ -2,8 +2,8 @@
 'use strict';
 const catirt_load = require('../dist/catirt');
 const itembank = require('../data/mocca-items.json');
-const fs = require('fs');
-const path = require('path');
+const DataLogger = require('./utils/data-logger');
+
 
 // responses of simulees at various true thetas
 const simulees = [
@@ -34,49 +34,7 @@ const simulees = [
   { id: 25, true_theta1: 2, true_theta2: 2, responses:[1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1] },
 ];
 
-/* DataLogger
-** added to make it easier to view the output
-*/
-class DataLogger {
-  constructor(headers, filename = 'output.csv') {
-      this.headers = headers;
-      this.data = [];
-      
-      // Create output directory if it doesn't exist
-      const outputDir = 'output';
-      if (!fs.existsSync(outputDir)) {
-          console.log('📁 Creating output directory...');
-          fs.mkdirSync(outputDir);
-      }
 
-      // Setup CSV file stream in the output directory
-      const filepath = path.join(outputDir, filename);
-      console.log(`📝 Writing to ${filepath}`);
-      this.csvStream = fs.createWriteStream(filepath);
-      this.csvStream.write(headers.join(',') + '\n');
-  }
-
-  logRow(rowData) {
-      // Save to array for console.table later
-      this.data.push(rowData);
-      
-      // Write to CSV
-      const csvLine = this.headers
-          .map(header => rowData[header])
-          .join(',');
-      this.csvStream.write(csvLine + '\n');
-
-      // Print formatted console output
-      //console.table([rowData]);
-  }
-
-  finish() {
-      this.csvStream.end();
-      console.log('\n📊 Final Results:');
-      //console.table(this.data);
-      console.log('✅ Data logging complete!');
-  }
-}
 
 class BaseCAT {
   // catirt library
@@ -534,15 +492,13 @@ Pilot1.register();
         'id', 'theta1', 'theta2', 'item_selected',
         'input_response', 'input_response2',
         'output_est_theta2', 'output_sem'
-    ], 'item_by_item_results.csv');  // Optional filename
-    // ... use logger.logRow() instead of console.log
+    ], 'item_by_item_results.csv');  
   } else {
     logger = new DataLogger([
         'id', 'theta1', 'theta2',
         'output_est_theta2', 'output_sem',
         'output_classification'
-    ], 'summary_results.csv');  // Optional filename
-    // ... use logger.logRow() instead of console.log
+    ], 'summary_results.csv');  
   }  
 
 
@@ -609,10 +565,10 @@ Pilot1.register();
       // should never get here
       console.warn(`NOT DONE after processing all responses for simulee(${simulees[i].id})`);
     } else {
-      console.log(`${`${i}`.padStart(2)} DONE: Successfully ran`)
+      console.log(`📊 ${`${i}`.padStart(2)} DONE: Successfully ran`)
     }
   }
 
-  await logger.finish()
+  logger.finish()
 
 })();

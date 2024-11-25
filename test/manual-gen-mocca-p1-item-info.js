@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const catirt_load = require('../dist/catirt');
 const items = require('../data/mocca-items.json');
+const DataLogger = require('./utils/data-logger');
 
 // extract params
 const params = items.map(i => i.p1params);
@@ -17,17 +18,33 @@ catirt_load().then(function(catirt) {
   const mTheta = catirt.MatrixFromArray([theta]);
   const info = catirt.wasm_FI_brm(mParams, mTheta, catirt.FIType.EXPECTED, mResp);
 
-  console.log(`theta,item,info,a,b,c`);
+  // header and logging starts
+  logger = new DataLogger([
+    'theta','item','info','a','b','c'
+  ], 'p1_item_results.csv');
+  
   for (let m = 0; m < info.item.rows(); m++) {
     for (let n = 0; n < info.item.cols(); n++) {
-      console.log(`${theta[m]},${items[n]['id']},${info.item.get(m, n)},${params[n][0]},${params[n][1]},${params[n][2]}`);
+      logger.logRow({
+        theta: theta[m],
+        item: items[n]['id'],
+        info: info.item.get(m, n),
+        a: params[n][0],
+        b: params[n][1],
+        c: params[n][2]
+      });
     }
   }
 
+  // cleanup
   mParams.delete();
   mResp.delete();
   mTheta.delete();
   info.item.delete();
   info.test.delete();
   info.sem.delete();
+
+  logger.finish()
+
 });
+
